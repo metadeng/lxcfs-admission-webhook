@@ -1,22 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: lxcfs-admission-webhook-deployment
+  name: lxcfs-webhook
+  namespace: lxcfs
   labels:
-    app: lxcfs-admission-webhook
+    app: lxcfs-webhook
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lxcfs-admission-webhook
+      app: lxcfs-webhook
   template:
     metadata:
       labels:
-        app: lxcfs-admission-webhook
+        app: lxcfs-webhook
     spec:
       containers:
-        - name: lxcfs-admission-webhook
-          image: registry.cn-hangzhou.aliyuncs.com/denverdino/lxcfs-admission-webhook:v1
+        - name: lxcfs-webhook
+          image: dev-deploy.deepexi.com/2048-component/lxcfs/lxcfs-admission-webhook:v1
           imagePullPolicy: IfNotPresent
           args:
             - -tlsCertFile=/etc/webhook/certs/cert.pem
@@ -28,7 +29,9 @@ spec:
             - name: webhook-certs
               mountPath: /etc/webhook/certs
               readOnly: true
+      imagePullSecrets:
+        - name: lxcfs
       volumes:
         - name: webhook-certs
           secret:
-            secretName: lxcfs-admission-webhook-certs
+            secretName: lxcfs-webhook

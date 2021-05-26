@@ -1,7 +1,7 @@
 #!/bin/bash
 
-./deployment/webhook-create-signed-cert.sh
-kubectl get secret lxcfs-admission-webhook-certs
+./deployment/webhook-create-signed-cert.sh --service lxcfs-webhook --namespace lxcfs --secret lxcfs-webhook
+kubectl get secret lxcfs-webhook -n lxcfs
 
 kubectl create -f deployment/deployment.yaml
 kubectl create -f deployment/service.yaml
