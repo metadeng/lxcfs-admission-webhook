@@ -3,12 +3,14 @@ kind: Deployment
 metadata:
   name: web
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: web
   template:
     metadata:
+      annotations:
+        lxcfs-webhook.deepexi.com/inject: "on"
       labels:
         app: web
     spec:

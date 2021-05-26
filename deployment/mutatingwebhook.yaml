@@ -6,7 +6,7 @@ metadata:
   labels:
     app: lxcfs-webhook
 webhooks:
-  - name: mutating.lxcfs-admission-webhook.aliyun.com
+  - name: lxcfs-webhook.deepexi.com
     clientConfig:
       service:
         name: lxcfs-webhook
@@ -18,6 +18,6 @@ webhooks:
         apiGroups: ["core", ""]
         apiVersions: ["v1"]
         resources: ["pods"]
-    namespaceSelector:
-      matchLabels:
-        lxcfs-admission-webhook: enabled
+#    namespaceSelector:
+#      matchLabels:
+#        lxcfs-admission-webhook: enabled

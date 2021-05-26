@@ -3,7 +3,7 @@
 
 #dep ensure -v
 CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o lxcfs-admission-webhook
-docker build --no-cache -t dev-deploy.deepexi.com/2048-component/lxcfs/lxcfs-admission-webhook:v1 .
+docker build --no-cache -t dev-deploy.deepexi.com/2048-component/lxcfs/lxcfs-admission-webhook:v2 .
 #docker push 10.201.0.187/2048-component/REPOSITORY[:TAG]
 #rm -rf lxcfs-admission-webhook
 

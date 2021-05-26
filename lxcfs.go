@@ -203,7 +203,7 @@ func createPodPatch(pod *corev1.Pod) ([]byte, error) {
 			op.Op = " replace"
 		}
 		op.Path = "/metadata/annotations/" + escapeJSONPointerValue(admissionWebhookAnnotationStatusKey)
-		op.Value = "mutated"
+		op.Value = "injected"
 	}
 
 	patches = append(patches, op)

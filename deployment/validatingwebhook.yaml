@@ -4,12 +4,12 @@ metadata:
   name: validation-lxcfs-admission-webhook-cfg
   namespace: lxcfs
   labels:
-    app: lxcfs-admission-webhook
+    app: lxcfs-webhook
 webhooks:
-  - name: validation.lxcfs-admission-webhook.aliyun.com
+  - name: lxcfs-webhook.deepexi.com
     clientConfig:
       service:
-        name: lxcfs-webhook-svc
+        name: lxcfs-webhook
         namespace: lxcfs
         path: "/validate"
       caBundle: ${CA_BUNDLE}
@@ -18,6 +18,6 @@ webhooks:
         apiGroups: ["pod", ""]
         apiVersions: ["v1"]
         resources: ["pods"]
-    namespaceSelector:
-      matchLabels:
-        lxcfs-admission-webhook: enabled
+#    namespaceSelector:
+#      matchLabels:
+#        lxcfs-admission-webhook: enabled

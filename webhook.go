@@ -21,9 +21,7 @@ var (
 	runtimeScheme = runtime.NewScheme()
 	codecs        = serializer.NewCodecFactory(runtimeScheme)
 	deserializer  = codecs.UniversalDeserializer()
-
-	// (https://github.com/kubernetes/kubernetes/issues/57982)
-	defaulter = runtime.ObjectDefaulter(runtimeScheme)
+	defaulter     = runtime.ObjectDefaulter(runtimeScheme)
 )
 
 var (
@@ -31,44 +29,17 @@ var (
 		metav1.NamespaceSystem,
 		metav1.NamespacePublic,
 	}
-	requiredLabels = []string{
-		nameLabel,
-		instanceLabel,
-		versionLabel,
-		componentLabel,
-		partOfLabel,
-		managedByLabel,
-	}
-	addLabels = map[string]string{
-		nameLabel:      NA,
-		instanceLabel:  NA,
-		versionLabel:   NA,
-		componentLabel: NA,
-		partOfLabel:    NA,
-		managedByLabel: NA,
-	}
 )
 
 const (
-	admissionWebhookAnnotationValidateKey = "lxcfs-admission-webhook.aliyun.com/validate"
-	admissionWebhookAnnotationMutateKey   = "lxcfs-admission-webhook.aliyun.com/mutate"
-	admissionWebhookAnnotationStatusKey   = "lxcfs-admission-webhook.aliyun.com/status"
-
-	nameLabel      = "app.kubernetes.io/name"
-	instanceLabel  = "app.kubernetes.io/instance"
-	versionLabel   = "app.kubernetes.io/version"
-	componentLabel = "app.kubernetes.io/component"
-	partOfLabel    = "app.kubernetes.io/part-of"
-	managedByLabel = "app.kubernetes.io/managed-by"
-
-	NA = "not_available"
+	admissionWebhookAnnotationStatusKey = "lxcfs-webhook.deepexi.com/status"
+	admissionWebhookAnnotationInjectKey = "lxcfs-webhook.deepexi.com/inject"
 )
 
 type WebhookServer struct {
 	server *http.Server
 }
 
-// Webhook Server parameters
 type WhSvrParameters struct {
 	port           int    // webhook server port
 	certFile       string // path to the x509 certificate for https
@@ -85,13 +56,10 @@ type patchOperation struct {
 func init() {
 	_ = corev1.AddToScheme(runtimeScheme)
 	_ = admissionregistrationv1beta1.AddToScheme(runtimeScheme)
-	// defaulting with webhooks:
-	// https://github.com/kubernetes/kubernetes/issues/57982
 	_ = v1.AddToScheme(runtimeScheme)
 }
 
-func admissionRequired(ignoredList []string, admissionAnnotationKey string, metadata *metav1.ObjectMeta) bool {
-	// skip special kubernetes system namespaces
+func mutationRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
 	for _, namespace := range ignoredList {
 		if metadata.Namespace == namespace {
 			glog.Infof("Skip validation for %v for it's in special namespace:%v", metadata.Name, metadata.Namespace)
@@ -103,39 +71,23 @@ func admissionRequired(ignoredList []string, admissionAnnotationKey string, meta
 	if annotations == nil {
 		annotations = map[string]string{}
 	}
-
 	var required bool
-	switch strings.ToLower(annotations[admissionAnnotationKey]) {
-	default:
-		required = true
-	case "n", "no", "false", "off":
-		required = false
-	}
-	return required
-}
-
-func mutationRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
-	required := admissionRequired(ignoredList, admissionWebhookAnnotationMutateKey, metadata)
-	annotations := metadata.GetAnnotations()
-	if annotations == nil {
-		annotations = map[string]string{}
-	}
 	status := annotations[admissionWebhookAnnotationStatusKey]
 
-	if strings.ToLower(status) == "mutated" {
+	if strings.ToLower(status) == "injected" {
 		required = false
+	} else {
+		switch strings.ToLower(annotations[admissionWebhookAnnotationInjectKey]) {
+		default:
+			required = false
+		case "y", "yes", "true", "on":
+			required = true
+		}
 	}
 
 	glog.Infof("Mutation policy for %v/%v: required:%v", metadata.Namespace, metadata.Name, required)
 	return required
 }
-
-func validationRequired(ignoredList []string, metadata *metav1.ObjectMeta) bool {
-	required := admissionRequired(ignoredList, admissionWebhookAnnotationValidateKey, metadata)
-	glog.Infof("Validation policy for %v/%v: required:%v", metadata.Namespace, metadata.Name, required)
-	return required
-}
-
 
 // Serve method for webhook server
 func (whsvr *WebhookServer) serve(w http.ResponseWriter, r *http.Request) {

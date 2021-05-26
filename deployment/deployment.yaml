@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: lxcfs-webhook
-          image: dev-deploy.deepexi.com/2048-component/lxcfs/lxcfs-admission-webhook:v1
+          image: dev-deploy.deepexi.com/2048-component/lxcfs/lxcfs-admission-webhook:v2
           imagePullPolicy: IfNotPresent
           args:
             - -tlsCertFile=/etc/webhook/certs/cert.pem
